@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../../.."
+		},
+		{
+			"path": "../../../../../../../../Car"
+		}
+	],
+	"settings": {
+		"java.compile.nullAnalysis.mode": "automatic"
+	}
+}
