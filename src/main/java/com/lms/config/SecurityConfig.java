@@ -110,8 +110,10 @@ public class SecurityConfig {
         devOrigins.forEach(o -> { if (!allOrigins.contains(o)) allOrigins.add(o); });
 
         configuration.setAllowedOriginPatterns(allOrigins);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control", "Pragma", "X-Tenant-ID"));
+        configuration.addAllowedMethod("*");
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+      //  configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+      //  configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control", "Pragma", "X-Tenant-ID"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
