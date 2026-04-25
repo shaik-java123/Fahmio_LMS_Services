@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -19,12 +20,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.*;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Configuration
 @EnableWebSecurity
@@ -43,9 +41,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+
+                // ✅ Enable CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .authorizeHttpRequests(auth -> auth
+
+                        // ✅ CRITICAL FIX: allow preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
+
                         .requestMatchers(
                                 "/auth/**",
                                 "/api/auth/**",
@@ -72,14 +78,20 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
+
                         .requestMatchers("/super-admin/**", "/api/super-admin/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/admin/**", "/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/instructor/**", "/api/instructor/**").hasAnyRole("INSTRUCTOR", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/interviews/**", "/api/interviews/**").authenticated()
-                        .anyRequest().authenticated())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .anyRequest().authenticated()
+                )
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
                 .authenticationProvider(authenticationProvider())
+
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(tenantFilter, JwtAuthenticationFilter.class);
 
@@ -88,38 +100,53 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
+
+        System.out.println("CORS CONFIG LOADED");
+
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Split the comma-separated origins from properties (works for both local and Azure)
+        // Parse env origins
         List<String> origins = Arrays.stream(allowedOriginsRaw.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
 
-        // Always include localhost origins for development
-        List<String> allOrigins = new java.util.ArrayList<>(origins);
+        List<String> allOrigins = new ArrayList<>(origins);
+
+        // ✅ ADD THIS (CRITICAL for your case)
+        List<String> prodOrigins = List.of(
+                "https://*.vercel.app",
+                "https://famiho-lms-services.onrender.com"// ✅ Vercel support (prod + preview)
+        );
+
+        // Dev origins
         List<String> devOrigins = List.of(
                 "http://localhost:5173",
-                "http://*.localhost:5173",
                 "http://localhost:3000",
-                "http://*.localhost:3000",
                 "http://127.0.0.1:5173",
-                "http://127.0.0.1:3000",
-                "https://famiho-lms-services.onrender.com/"
+                "http://127.0.0.1:3000"
         );
+
+        prodOrigins.forEach(o -> { if (!allOrigins.contains(o)) allOrigins.add(o); });
         devOrigins.forEach(o -> { if (!allOrigins.contains(o)) allOrigins.add(o); });
 
         configuration.setAllowedOriginPatterns(allOrigins);
-        configuration.addAllowedMethod("*");
+
+        // ✅ Allow everything cleanly
+        configuration.setAllowedMethods(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-      //  configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-      //  configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control", "Pragma", "X-Tenant-ID"));
+
         configuration.setExposedHeaders(List.of("Authorization"));
+
+        // ✅ Required for JWT
         configuration.setAllowCredentials(true);
+
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 
