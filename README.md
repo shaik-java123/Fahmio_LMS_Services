@@ -1,0 +1,8 @@
+Excited to share my next Handson venture after Karmika (HRMS ) , I have started working on LMS Product (Fahmio : Illuminate Your Learning Journey.)
+ the latest evolution of our Next-Gen LMS SaaS Platform! 🌐
+We’ve moved beyond simple video players to create a truly immersive, high-performance ecosystem for educators and organizations. Our latest release focuses on the "Three Pillars of Modern Learning":
+✅ 1. Synchronous Mastery (Live Classes) Integrating Google Meet, Zoom, and Jitsi isn't just a link—it's an experience. We’ve added Automated Countdown Timers, synchronized launch windows, and time-gated access (5 mins before start) to ensure students are ready to engage exactly on time.
+✅ 2. Interactive Evaluation (Assignment Center) Assignments are now rich and multi-dimensional. Instructors can provide Video/Audio reference materials directly within tasks, and candidates can submit their work with ease. The new Orange Grading Panel allows instructors to review, score, and provide feedback in a high-fidelity side drawer.
+✅ 3. Enterprise SaaS Architecture Built on a robust Multi-Tenant core, the platform supports individual branding (Tenants) and secure role-based access control (RBAC). Whether you're a solo instructor or a global enterprise, the experience remains premium, polished, and powerful.
+🎨 Aesthetics meet Utility: We’ve prioritized a "Design-First" approach, utilizing glassmorphism, vibrant indigo/orange accents, and smooth animations to ensure the interface isn't just functional—it's inspiring.
+The goal? To empower mentors to teach better and students to learn faster
